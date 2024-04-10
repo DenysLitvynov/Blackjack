@@ -26,7 +26,4 @@ public class CardModel : MonoBehaviour
             spriteRenderer.sprite = cardBack;            
         }
     }
-
-
-
 }
