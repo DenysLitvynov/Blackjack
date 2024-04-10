@@ -11,13 +11,21 @@ public class Deck : MonoBehaviour
     public Button playAgainButton;
     public Text finalMessage;
     public Text probMessage;
+    public Text dealerPointsText;
+    public Text playerPointsText;
+    public Text creditText;
+    public Dropdown betDropdown;
 
     public int[] values = new int[52];
     int cardIndex = 0;
+    int bank = 1000;
 
     private void Awake()
     {
         InitCardValues();
+        dealerPointsText.text = "";
+        playerPointsText.text = "Puntos del jugador: 0";
+        creditText.text = "Crédito: " + bank.ToString() + "€";
     }
 
     private void Start()
@@ -57,21 +65,34 @@ public class Deck : MonoBehaviour
 
     void StartGame()
     {
-        for (int i = 0; i < 2; i++)
+        int bet = int.Parse(betDropdown.options[betDropdown.value].text);
+        if (bet > bank)
         {
-            PushPlayer();
-            PushDealer();
+            finalMessage.text = "Apuesta no válida.";
+            return;
         }
+        bank -= bet;
+        creditText.text = "Crédito: " + bank.ToString() + "€";
+
+        PushDealer();
+        PushDealer();
+
+        PushPlayer();
+        PushPlayer();
 
         if (player.GetComponent<CardHand>().points == 21 && dealer.GetComponent<CardHand>().points != 21)
         {
             finalMessage.text = "¡Blackjack! Has ganado.";
+            bank += bet * 2;
         }
         else if (dealer.GetComponent<CardHand>().points == 21 && player.GetComponent<CardHand>().points != 21)
         {
             finalMessage.text = "El dealer tiene Blackjack. Has perdido.";
         }
+        creditText.text = "Crédito: " + bank.ToString() + "€";
+        playerPointsText.text = "Puntos del jugador: " + player.GetComponent<CardHand>().points.ToString();
     }
+
 
     private void CalculateProbabilities()
     {
@@ -120,6 +141,8 @@ public class Deck : MonoBehaviour
 
     public void Hit()
     {
+        int bet = int.Parse(betDropdown.options[betDropdown.value].text);
+
         if (cardIndex <= 4)
         {
             dealer.GetComponent<CardHand>().InitialToggle();
@@ -130,11 +153,22 @@ public class Deck : MonoBehaviour
         if (player.GetComponent<CardHand>().points > 21)
         {
             finalMessage.text = "Has perdido. Tus puntos superan los 21.";
+            dealerPointsText.text = "Puntos del dealer: " + dealer.GetComponent<CardHand>().points.ToString();
         }
+        else if (player.GetComponent<CardHand>().points == 21)
+        {
+            finalMessage.text = "¡Blackjack! Has ganado.";
+            bank += bet * 2;
+            dealerPointsText.text = "Puntos del dealer: " + dealer.GetComponent<CardHand>().points.ToString();
+        }
+        creditText.text = "Crédito: " + bank.ToString() + "€";
+        playerPointsText.text = "Puntos del jugador: " + player.GetComponent<CardHand>().points.ToString();
     }
 
     public void Stand()
     {
+        int bet = int.Parse(betDropdown.options[betDropdown.value].text);
+
         if (cardIndex <= 4)
         {
             dealer.GetComponent<CardHand>().InitialToggle();
@@ -148,6 +182,7 @@ public class Deck : MonoBehaviour
         if (dealer.GetComponent<CardHand>().points > 21)
         {
             finalMessage.text = "Has ganado. El dealer ha superado los 21 puntos.";
+            bank += bet * 2;
         }
         else if (dealer.GetComponent<CardHand>().points > player.GetComponent<CardHand>().points)
         {
@@ -156,11 +191,16 @@ public class Deck : MonoBehaviour
         else if (dealer.GetComponent<CardHand>().points < player.GetComponent<CardHand>().points)
         {
             finalMessage.text = "Has ganado. Tienes más puntos que el dealer.";
+            bank += bet * 2;
         }
         else
         {
             finalMessage.text = "Es un empate.";
+            bank += bet;
         }
+        creditText.text = "Crédito: " + bank.ToString() + "€";
+        dealerPointsText.text = "Puntos del dealer: " + dealer.GetComponent<CardHand>().points.ToString();
+        playerPointsText.text = "Puntos del jugador: " + player.GetComponent<CardHand>().points.ToString();
     }
 
     public void PlayAgain()
@@ -175,5 +215,6 @@ public class Deck : MonoBehaviour
         StartGame();
     }
 }
+
 
 
