@@ -31,7 +31,10 @@ public class Deck : MonoBehaviour
     private void Start()
     {
         ShuffleCards();
-        StartGame();
+        hitButton.interactable = false; // Deshabilitar los botones de hit y stand al inicio
+        stickButton.interactable = false;
+        playAgainButton.interactable = true; // Habilitar el botón de jugar al inicio
+        betDropdown.interactable = true; // Habilitar el botón de apostar al inicio
     }
 
     private void InitCardValues()
@@ -91,8 +94,10 @@ public class Deck : MonoBehaviour
         }
         creditText.text = "Crédito: " + bank.ToString() + "€";
         playerPointsText.text = "Puntos del jugador: " + player.GetComponent<CardHand>().points.ToString();
-    }
 
+        hitButton.interactable = true; // Habilitar los botones de hit y stand al inicio del juego
+        stickButton.interactable = true;
+    }
 
     private void CalculateProbabilities()
     {
@@ -154,12 +159,14 @@ public class Deck : MonoBehaviour
         {
             finalMessage.text = "Has perdido. Tus puntos superan los 21.";
             dealerPointsText.text = "Puntos del dealer: " + dealer.GetComponent<CardHand>().points.ToString();
+            EndGame(); // Llamar a EndGame si el jugador se pasa
         }
         else if (player.GetComponent<CardHand>().points == 21)
         {
             finalMessage.text = "¡Blackjack! Has ganado.";
             bank += bet * 2;
             dealerPointsText.text = "Puntos del dealer: " + dealer.GetComponent<CardHand>().points.ToString();
+            EndGame(); // Llamar a EndGame si el jugador consigue Blackjack
         }
         creditText.text = "Crédito: " + bank.ToString() + "€";
         playerPointsText.text = "Puntos del jugador: " + player.GetComponent<CardHand>().points.ToString();
@@ -201,20 +208,43 @@ public class Deck : MonoBehaviour
         creditText.text = "Crédito: " + bank.ToString() + "€";
         dealerPointsText.text = "Puntos del dealer: " + dealer.GetComponent<CardHand>().points.ToString();
         playerPointsText.text = "Puntos del jugador: " + player.GetComponent<CardHand>().points.ToString();
+
+        EndGame(); // Llamar a EndGame después de que el jugador decida plantarse
+    }
+
+    void EndGame()
+    {
+        hitButton.interactable = false; // Deshabilitar los botones de hit y stand al final del juego
+        stickButton.interactable = false;
+        playAgainButton.interactable = true; // Habilitar el botón de jugar de nuevo al final del juego
+        betDropdown.interactable = true; // Habilitar el botón de apostar al final del juego
     }
 
     public void PlayAgain()
     {
-        hitButton.interactable = true;
-        stickButton.interactable = true;
-        finalMessage.text = "";
+        int bet = int.Parse(betDropdown.options[betDropdown.value].text);
+        if (bet > bank)
+        {
+            finalMessage.text = "Apuesta no válida.";
+            return;
+        }
+        bank -= bet;
+        creditText.text = "Crédito: " + bank.ToString() + "€";
+
         player.GetComponent<CardHand>().Clear();
         dealer.GetComponent<CardHand>().Clear();
         cardIndex = 0;
         ShuffleCards();
-        StartGame();
+
+        StartGame(); // Llama a StartGame para iniciar el juego
+
+        hitButton.interactable = true; // Habilitar los botones de hit y stand al inicio del juego
+        stickButton.interactable = true;
+        playAgainButton.interactable = false; // Deshabilitar el botón de jugar durante el juego
+        betDropdown.interactable = false; // Deshabilitar el botón de apostar durante el juego
     }
 }
+
 
 
 
